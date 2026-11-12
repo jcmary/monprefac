@@ -1,0 +1,105 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../../../apps/api/src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+enum ContactStatus {
+  NEW
+  READ
+  ARCHIVED
+}
+
+enum CourseStatus {
+  DRAFT
+  PENDING
+  PUBLISHED
+  REJECTED
+}
+
+model User {
+  id          String       @id @default(uuid())
+  email       String       @unique
+  password    String
+  fullName    String?
+  bio         String?
+  role        UserRole     @default(STUDENT)
+  courses     Course[]     @relation("TeacherCourses")
+  enrollments Enrollment[]
+  reviews     Review[]     // <--- NOUVEAU
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Course {
+  id          String       @id @default(uuid())
+  title       String
+  description String
+  price       Int          @default(0)
+  subject     String
+  exam        String
+  coverImage  String?
+  status      CourseStatus @default(DRAFT)
+  teacherId   String
+  teacher     User         @relation("TeacherCourses", fields: [teacherId], references: [id], onDelete: Cascade)
+  lessons     Lesson[]
+  enrollments Enrollment[]
+  reviews     Review[]     // <--- NOUVEAU
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Lesson {
+  id        String   @id @default(uuid())
+  title     String
+  content   String   @db.Text
+  fileUrl   String?
+  fileType  String?
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Enrollment {
+  id        String   @id @default(uuid())
+  studentId String
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  @@unique([studentId, courseId])
+}
+
+// --- NOUVEAU MODELE ---
+model Review {
+  id        String   @id @default(uuid())
+  rating    Int      // Note de 1 à 5
+  comment   String?  @db.Text
+  studentId String
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([studentId, courseId]) // Un élève ne peut noter un cours qu'une seule fois
+}
+
+model ContactMessage {
+  id        String        @id @default(uuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  status    ContactStatus @default(NEW)
+  createdAt DateTime      @default(now())
+}

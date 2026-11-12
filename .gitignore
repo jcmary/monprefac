@@ -1,0 +1,33 @@
+# Dépendances
+node_modules/
+.pnpm-store/
+
+# Builds
+.next/
+out/
+dist/
+build/
+
+# Environnement (TRÈS IMPORTANT : ne jamais publier ses clés)
+.env
+.env.local
+.env.*.local
+
+# Prisma
+packages/database/generated/
+*.db
+*.db-journal
+
+# Fichiers uploadés par les utilisateurs (images, PDFs)
+apps/api/uploads/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Système
+.DS_Store
+Thumbs.db
